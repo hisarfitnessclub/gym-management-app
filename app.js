@@ -29,7 +29,47 @@ function applyBrand(){ $('brandName').textContent=GYM_BRAND.name; $('loginBrandN
 function initFirebase(){applyBrand();if(!configured){$('loginError').textContent='Add your Firebase config in app.js, then reload.';return}const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);onAuthStateChanged(auth,async user=>{if(user){$('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=user.email||'Admin';await refreshAll()}else{$('app').classList.add('hidden');$('loginScreen').classList.remove('hidden')}})}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();showError('loginError','');if(!auth){showError('loginError','Configure Firebase first (see README).');return}try{await signInWithEmailAndPassword(auth,$('loginEmail').value.trim(),$('loginPassword').value)}catch(err){showError('loginError',friendlyError(err))}});
 $('logoutBtn').addEventListener('click',()=>signOut(auth));
-async function refreshAll(){try{const [m,p,x,a]=await Promise.all([getDocs(query(collection(db,'members'),orderBy('createdAt','desc'))),getDocs(query(collection(db,'payments'),orderBy('createdAt','desc'))),getDocs(query(collection(db,'expenses'),orderBy('createdAt','desc'))),getDocs(query(collection(db,'attendance'),orderBy('checkedInAt','desc'))]);members=m.docs.map(d=>({id:d.id,...d.data()}));payments=p.docs.map(d=>({id:d.id,...d.data()}));expenses=x.docs.map(d=>({id:d.id,...d.data()}));attendance=a.docs.map(d=>({id:d.id,...d.data()}));renderAll()}catch(err){notify('Could not load data: '+friendlyError(err))}}
+async function refreshAll() {
+  try {
+    const results = await Promise.all([
+      getDocs(
+        query(
+          collection(db, "members"),
+          orderBy("createdAt", "desc")
+        )
+      ),
+      getDocs(
+        query(
+          collection(db, "payments"),
+          orderBy("createdAt", "desc")
+        )
+      ),
+      getDocs(
+        query(
+          collection(db, "expenses"),
+          orderBy("createdAt", "desc")
+        )
+      ),
+      getDocs(
+        query(
+          collection(db, "attendance"),
+          orderBy("checkedInAt", "desc")
+        )
+      )
+    ]);
+
+    const [m, p, x, a] = results;
+
+    members = m.docs.map(d => ({ id: d.id, ...d.data() }));
+    payments = p.docs.map(d => ({ id: d.id, ...d.data() }));
+    expenses = x.docs.map(d => ({ id: d.id, ...d.data() }));
+    attendance = a.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    renderAll();
+  } catch (err) {
+    notify("Could not load data: " + friendlyError(err));
+  }
+}
 function renderAll(){renderDashboard();renderMembers();renderPayments();renderAttendance();renderReports();populatePaymentMembers();populateAttendanceMembers();renderReminders()}
 function memberCell(m){return `<div class="member-cell"><span class="member-avatar">${esc((m.name||'?').trim().charAt(0).toUpperCase())}</span>${esc(m.name)}</div>`}
 function renderDashboard(){const active=members.filter(m=>statusOf(m)==='Active'),soon=active.filter(m=>daysUntil(m.expiryDate)>=0&&daysUntil(m.expiryDate)<=7);$('totalMembers').textContent=members.length;$('activeMembers').textContent=active.length;$('expiringMembers').textContent=soon.length;$('totalRevenue').textContent=money(payments.filter(p=>(p.paymentDate||'').startsWith(monthNow())).reduce((s,p)=>s+Number(p.amount||0),0));$('todayAttendance').textContent=attendance.filter(a=>a.date===today()).length;$('recentMembers').innerHTML=members.slice(0,5).map(m=>`<tr><td>${memberCell(m)}</td><td>${esc(m.phone)}</td><td>${esc(m.plan)}</td><td>${esc(m.expiryDate)}</td><td><span class="badge ${statusOf(m).toLowerCase()}">${statusOf(m)}</span></td></tr>`).join('')||'<tr><td colspan="5">No members added yet.</td></tr>'}
