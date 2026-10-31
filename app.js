@@ -4,12 +4,12 @@ import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, q
 
 // Replace these values with the web app config from Firebase Console.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDyfJDLrZ2bFAdLQhJ72jof8-_1sRxFQPY",
+  authDomain: "gym-backend-719eb.firebaseapp.com",
+  projectId: "gym-backend-719eb",
+  storageBucket: "gym-backend-719eb.firebasestorage.app",
+  messagingSenderId: "610292511359",
+  appId: "1:610292511359:web:bca0f9dbe3857707f7054a"
 };
 // Gym branding: customize these values.
 const GYM_BRAND = { name: "Hisar Fitness Club", tagline: "FITNESS • STRENGTH • COMMUNITY", logoUrl: "assets/hisarfitnessclublogo.jpg" };
